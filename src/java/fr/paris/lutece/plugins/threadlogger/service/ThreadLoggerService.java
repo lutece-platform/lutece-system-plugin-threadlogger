@@ -49,16 +49,23 @@ public class ThreadLoggerService
         ThreadMXBean mxBean = ManagementFactory.getThreadMXBean();
         long[] threadIds = mxBean.getAllThreadIds();
         ThreadInfo[] threadInfos = mxBean.getThreadInfo( threadIds );
+        int nThreadCount = threadInfos.length;
         
-        if( threadInfos.length > nThreadsLimit )
+        if( nThreadCount > nThreadsLimit )
         {
-            AppLogService.info( "Thread count greater than limit : " + nThreadsLimit );
+            AppLogService.info( "Thread count : " + nThreadCount + " is greater than limit : " + nThreadsLimit );
+            AppLogService.info( "---------- Threads list -----------" );
             for (ThreadInfo threadInfo : threadInfos)
             {
-                AppLogService.info( "---------- Threads list -----------" );
-                AppLogService.info( threadInfo.getThreadName() + "- bc=" + threadInfo.getBlockedCount() + "- bt=" + threadInfo.getBlockedTime() + "- wc=" + threadInfo.getWaitedCount() + "-wt=" + threadInfo.getWaitedCount());
-                AppLogService.info( "-----------------------------------" );
+                StringBuilder sbLog = new StringBuilder();
+                sbLog.append( "[Thread] [" ).append( threadInfo.getThreadState().name()).append( "] ").append( threadInfo.getThreadName() );
+                sbLog.append( "- bc=" ).append( threadInfo.getBlockedCount() );
+                sbLog.append( "- bt=" ).append( threadInfo.getBlockedTime() );
+                sbLog.append( "- wc=" ).append( threadInfo.getWaitedCount() );
+                sbLog.append( "- wt=" ).append( threadInfo.getWaitedCount() );
+                AppLogService.info( sbLog.toString() );
             }
+            AppLogService.info( "-----------------------------------" );
         }
 
     }
