@@ -58,15 +58,28 @@ public class ThreadLoggerService
             for (ThreadInfo threadInfo : threadInfos)
             {
                 StringBuilder sbLog = new StringBuilder();
-                sbLog.append( "[Thread] [" ).append( threadInfo.getThreadState().name()).append( "] ").append( threadInfo.getThreadName() );
+                Thread.State state = threadInfo.getThreadState();
+                sbLog.append( "[Thread] [" ).append( state.name()).append( "] ").append( threadInfo.getThreadName() );
                 sbLog.append( "- bc=" ).append( threadInfo.getBlockedCount() );
                 sbLog.append( "- bt=" ).append( threadInfo.getBlockedTime() );
                 sbLog.append( "- wc=" ).append( threadInfo.getWaitedCount() );
                 sbLog.append( "- wt=" ).append( threadInfo.getWaitedCount() );
+                if( state == Thread.State.BLOCKED )
+                {
+                    addStackTrace( sbLog , threadInfo.getStackTrace() );
+                }
                 AppLogService.info( sbLog.toString() );
             }
             AppLogService.info( "-----------------------------------" );
         }
 
+    }
+
+    private static void addStackTrace( StringBuilder sbLog, StackTraceElement[] stackTrace)
+    {
+        for( StackTraceElement element : stackTrace )
+        {
+            sbLog.append( element.getClassName() ).append( " ").append( element.getMethodName()).append( " ").append( element.getLineNumber() ).append( "\n");
+        }
     }
 }
