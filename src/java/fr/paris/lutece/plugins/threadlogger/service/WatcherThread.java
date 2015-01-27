@@ -46,6 +46,7 @@ public class WatcherThread extends Thread
 
     public WatcherThread( int nThreadLimit , long lDelay )
     {
+        super( "ThreadLogger-WatcherThread" );
         _nThreadLimit = nThreadLimit;
         _lDelay = lDelay;
     }
@@ -54,7 +55,7 @@ public class WatcherThread extends Thread
     @Override
     public void run()
     {
-        AppLogService.info( "ThreadLogger - Watcher Thread lauched ");
+        AppLogService.info( "ThreadLogger - WatcherThread launched ");
         AppLogService.info( "- Thread count limit = " + _nThreadLimit );
         while( true )
         {

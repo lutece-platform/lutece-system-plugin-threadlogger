@@ -34,6 +34,7 @@
 package fr.paris.lutece.plugins.threadlogger.service;
 
 import fr.paris.lutece.portal.service.util.AppLogService;
+import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
@@ -59,11 +60,16 @@ public class ThreadLoggerService
             {
                 StringBuilder sbLog = new StringBuilder();
                 Thread.State state = threadInfo.getThreadState();
-                sbLog.append( "[Thread] [" ).append( state.name()).append( "] ").append( threadInfo.getThreadName() );
-                sbLog.append( "- bc=" ).append( threadInfo.getBlockedCount() );
-                sbLog.append( "- bt=" ).append( threadInfo.getBlockedTime() );
-                sbLog.append( "- wc=" ).append( threadInfo.getWaitedCount() );
-                sbLog.append( "- wt=" ).append( threadInfo.getWaitedCount() );
+                LockInfo lock = threadInfo.getLockInfo();
+                sbLog.append( "[Thread] [" ).append( state.name()).append( "] [").append( threadInfo.getThreadName() ).append( "]");
+                if( lock != null )
+                {
+                    sbLog.append( " locked on " ).append( lock.getClassName() );
+                }
+                sbLog.append( " - bc=" ).append( threadInfo.getBlockedCount() );
+                sbLog.append( " - bt=" ).append( threadInfo.getBlockedTime() );
+                sbLog.append( " - wc=" ).append( threadInfo.getWaitedCount() );
+                sbLog.append( " - wt=" ).append( threadInfo.getWaitedCount() );
                 if( state == Thread.State.BLOCKED )
                 {
                     addStackTrace( sbLog , threadInfo.getStackTrace() );

@@ -53,7 +53,7 @@ public class ThreadLoggerLauncherStartUpService implements PostStartUpService
         int nLimit = AppPropertiesService.getPropertyInt( PROPERTY_LIMIT, DEFAULT_LIMIT );
         long nDelay = AppPropertiesService.getPropertyLong( PROPERTY_DELAY, DEFAULT_DELAY );
         WatcherThread watcher = new WatcherThread( nLimit , nDelay );
-        watcher.run();
+        watcher.start();
     }
 
     @Override
