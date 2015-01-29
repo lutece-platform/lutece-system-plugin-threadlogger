@@ -31,10 +31,10 @@
  *
  * License 1.0
  */
-
 package fr.paris.lutece.plugins.threadlogger.service;
 
 import fr.paris.lutece.portal.service.util.AppLogService;
+
 
 /**
  * WatcherThread : Thread that watchs theads
@@ -42,34 +42,36 @@ import fr.paris.lutece.portal.service.util.AppLogService;
 public class WatcherThread extends Thread
 {
     private final int _nThreadLimit;
-    private final long _lDelay;   
+    private final long _lDelay;
+    private final String[] _states;
 
-    public WatcherThread( int nThreadLimit , long lDelay )
+    public WatcherThread( int nThreadLimit, long lDelay, String[] states )
     {
-        super( "ThreadLogger-WatcherThread" );
+        super( "Lutece-ThreadLogger-WatcherThread" );
         _nThreadLimit = nThreadLimit;
         _lDelay = lDelay;
+        _states = states;
+        setDaemon( true );
     }
-    
 
     @Override
-    public void run()
+    public void run(  )
     {
-        AppLogService.info( "ThreadLogger - WatcherThread launched ");
+        AppLogService.info( "ThreadLogger - WatcherThread launched " );
         AppLogService.info( "- Thread count limit = " + _nThreadLimit );
-        while( true )
+
+        while ( true )
         {
-            ThreadLoggerService.watchThreads( _nThreadLimit );
+            ThreadLoggerService.watchThreads( _nThreadLimit, _states );
+
             try
             {
                 sleep( _lDelay );
             }
-            catch (InterruptedException ex)
+            catch ( InterruptedException ex )
             {
-                AppLogService.error( "WatcherThread interrupted " + ex.getMessage() , ex );
+                AppLogService.error( "WatcherThread interrupted " + ex.getMessage(  ), ex );
             }
         }
     }
-    
-    
 }

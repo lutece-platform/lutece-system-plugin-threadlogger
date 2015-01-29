@@ -34,58 +34,193 @@
 package fr.paris.lutece.plugins.threadlogger.service;
 
 import fr.paris.lutece.portal.service.util.AppLogService;
+
 import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
+import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Map;
+
 
 /**
  * ThreadLoggerService
  */
 public class ThreadLoggerService
 {
+    private static ThreadComparator _comparator = new ThreadComparator(  );
 
-    public static void watchThreads( int nThreadsLimit )
+    /**
+     * Watch threads and log threads infos if the number of thread is greater than a given limit
+     * @param nThreadsLimit The limit
+     */
+    public static void watchThreads( int nThreadsLimit, String[] states )
     {
-        ThreadMXBean mxBean = ManagementFactory.getThreadMXBean();
-        long[] threadIds = mxBean.getAllThreadIds();
+        ThreadMXBean mxBean = ManagementFactory.getThreadMXBean(  );
+        long[] threadIds = mxBean.getAllThreadIds(  );
         ThreadInfo[] threadInfos = mxBean.getThreadInfo( threadIds );
         int nThreadCount = threadInfos.length;
-        
-        if( nThreadCount > nThreadsLimit )
+
+        if ( nThreadCount > nThreadsLimit )
         {
+            Arrays.sort( threadInfos, _comparator );
             AppLogService.info( "Thread count : " + nThreadCount + " is greater than limit : " + nThreadsLimit );
             AppLogService.info( "---------- Threads list -----------" );
-            for (ThreadInfo threadInfo : threadInfos)
+
+            Map<Thread, StackTraceElement[]> mapThreads = Thread.getAllStackTraces(  );
+
+            for ( ThreadInfo threadInfo : threadInfos )
             {
-                StringBuilder sbLog = new StringBuilder();
-                Thread.State state = threadInfo.getThreadState();
-                LockInfo lock = threadInfo.getLockInfo();
-                sbLog.append( "[Thread] [" ).append( state.name()).append( "] [").append( threadInfo.getThreadName() ).append( "]");
-                if( lock != null )
+                StringBuilder sbLog = new StringBuilder(  );
+                Thread.State state = threadInfo.getThreadState(  );
+                LockInfo lock = threadInfo.getLockInfo(  );
+
+                sbLog.append( "[Thread] [" ).append( state.name(  ) ).append( "] [" )
+                     .append( threadInfo.getThreadName(  ) ).append( "]" );
+
+                if ( lock != null )
                 {
-                    sbLog.append( " locked on " ).append( lock.getClassName() );
+                    sbLog.append( " locked on " ).append( lock.getClassName(  ) );
                 }
-                sbLog.append( " - bc=" ).append( threadInfo.getBlockedCount() );
-                sbLog.append( " - bt=" ).append( threadInfo.getBlockedTime() );
-                sbLog.append( " - wc=" ).append( threadInfo.getWaitedCount() );
-                sbLog.append( " - wt=" ).append( threadInfo.getWaitedCount() );
-                if( state == Thread.State.BLOCKED )
+
+                sbLog.append( " - bc=" ).append( threadInfo.getBlockedCount(  ) );
+                sbLog.append( " - bt=" ).append( threadInfo.getBlockedTime(  ) );
+                sbLog.append( " - wc=" ).append( threadInfo.getWaitedCount(  ) );
+                sbLog.append( " - wt=" ).append( threadInfo.getWaitedCount(  ) );
+
+                if ( showStackTrace( state.toString(  ), states ) )
                 {
-                    addStackTrace( sbLog , threadInfo.getStackTrace() );
+                    StackTraceElement[] stackTrace = threadInfo.getStackTrace(  );
+
+                    if ( ( stackTrace != null ) && ( stackTrace.length > 0 ) )
+                    {
+                        addStackTrace( sbLog, stackTrace );
+                    }
+
+                    stackTrace = getThreadStackTrace( mapThreads, threadInfo );
+
+                    if ( ( stackTrace != null ) && ( stackTrace.length > 0 ) )
+                    {
+                        addStackTrace( sbLog, stackTrace );
+                    }
+
+                    LockInfo[] lockInfo = threadInfo.getLockedSynchronizers(  );
+
+                    if ( lockInfo != null )
+                    {
+                        addLockInfo( sbLog, lockInfo );
+                    }
+
+                    MonitorInfo[] monitorInfo = threadInfo.getLockedMonitors(  );
+
+                    if ( monitorInfo != null )
+                    {
+                        addMonitorInfo( sbLog, monitorInfo );
+                    }
                 }
-                AppLogService.info( sbLog.toString() );
+
+                AppLogService.info( sbLog.toString(  ) );
             }
+
             AppLogService.info( "-----------------------------------" );
         }
-
     }
 
-    private static void addStackTrace( StringBuilder sbLog, StackTraceElement[] stackTrace)
+    private static StackTraceElement[] getThreadStackTrace( Map<Thread, StackTraceElement[]> mapThreads,
+        ThreadInfo threadInfo )
     {
-        for( StackTraceElement element : stackTrace )
+        for ( Thread thread : mapThreads.keySet(  ) )
         {
-            sbLog.append( element.getClassName() ).append( " ").append( element.getMethodName()).append( " ").append( element.getLineNumber() ).append( "\n");
+            if ( thread.getId(  ) == threadInfo.getThreadId(  ) )
+            {
+                return mapThreads.get( thread );
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Logs a stacktrace
+     * @param sbLog The logs buffer
+     * @param stackTrace The stacktrace
+     */
+    private static void addStackTrace( StringBuilder sbLog, StackTraceElement[] stackTrace )
+    {
+        sbLog.append( "\n" );
+
+        for ( StackTraceElement element : stackTrace )
+        {
+            sbLog.append( "\t at " ).append( element.getClassName(  ) ).append( "." ).append( element.getMethodName(  ) );
+            sbLog.append( "(" ).append( element.getFileName(  ) ).append( ":" ).append( element.getLineNumber(  ) )
+                 .append( ")\n" );
+        }
+    }
+
+    /**
+     * Logs locks infos
+     * @param sbLog The logs buffer
+     * @param lockInfos The lock infos
+     */
+    private static void addLockInfo( StringBuilder sbLog, LockInfo[] lockInfos )
+    {
+        for ( LockInfo lockInfo : lockInfos )
+        {
+            sbLog.append( lockInfo.getClassName(  ) ).append( "\n" );
+        }
+    }
+
+    private static void addMonitorInfo( StringBuilder sbLog, MonitorInfo[] monitorInfos )
+    {
+        for ( MonitorInfo monitorInfo : monitorInfos )
+        {
+            sbLog.append( monitorInfo.getClassName(  ) ).append( "\n" );
+
+            StackTraceElement stackTraceElement = monitorInfo.getLockedStackFrame(  );
+
+            if ( stackTraceElement != null /* && ( state == Thread.State.BLOCKED ) */ )
+            {
+                sbLog.append( stackTraceElement.getClassName(  ) ).append( " " )
+                     .append( stackTraceElement.getMethodName(  ) ).append( " " )
+                     .append( stackTraceElement.getLineNumber(  ) ).append( "\n" );
+            }
+        }
+    }
+
+    /**
+     * Return true if a given state is among a given state list
+     * @param strState The state
+     * @param states the state list
+     * @return true if a given state is among a state list
+     */
+    private static boolean showStackTrace( String strState, String[] states )
+    {
+        for ( String s : states )
+        {
+            if ( s.equals( strState ) )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Comparator to sort thread list by thread name
+     */
+    private static class ThreadComparator implements Comparator<ThreadInfo>
+    {
+        /**
+         * {@inheritDoc }
+         */
+        @Override
+        public int compare( ThreadInfo o1, ThreadInfo o2 )
+        {
+            return o1.getThreadName(  ).compareTo( o2.getThreadName(  ) );
         }
     }
 }

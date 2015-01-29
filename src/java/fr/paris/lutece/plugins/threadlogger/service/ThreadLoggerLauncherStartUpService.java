@@ -33,8 +33,10 @@
  */
 package fr.paris.lutece.plugins.threadlogger.service;
 
+import fr.paris.lutece.portal.service.daemon.DaemonEntry;
 import fr.paris.lutece.portal.service.init.PostStartUpService;
 import fr.paris.lutece.portal.service.util.AppPropertiesService;
+
 
 /**
  * ThreadLoggerLauncherStartUpService
@@ -46,20 +48,34 @@ public class ThreadLoggerLauncherStartUpService implements PostStartUpService
     private static final int DEFAULT_LIMIT = 4;
     private static final String PROPERTY_DELAY = "threadlogger.watch.delay";
     private static final long DEFAULT_DELAY = 10000;
+    private static final String PROPERTY_STATES = "threadlogger.showStackTrace.states";
+    private static final String DEFAULT_STATES = "BLOCKED, RUNNABLE";
 
     @Override
-    public void process()
+    public void process(  )
     {
         int nLimit = AppPropertiesService.getPropertyInt( PROPERTY_LIMIT, DEFAULT_LIMIT );
         long nDelay = AppPropertiesService.getPropertyLong( PROPERTY_DELAY, DEFAULT_DELAY );
-        WatcherThread watcher = new WatcherThread( nLimit , nDelay );
-        watcher.start();
+        String strStates = AppPropertiesService.getProperty( PROPERTY_STATES, DEFAULT_STATES );
+        WatcherThread watcher = new WatcherThread( nLimit, nDelay, getStates( strStates ) );
+        watcher.start(  );
     }
 
     @Override
-    public String getName()
+    public String getName(  )
     {
         return SERVICE_NAME;
     }
-    
+
+    private String[] getStates( String strStates )
+    {
+        String[] states = strStates.split( "," );
+
+        for ( int i = 0; i < states.length; i++ )
+        {
+            states[i] = states[i].trim(  );
+        }
+
+        return states;
+    }
 }
