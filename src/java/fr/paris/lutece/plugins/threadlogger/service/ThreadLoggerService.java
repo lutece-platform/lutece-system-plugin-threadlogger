@@ -78,12 +78,12 @@ public class ThreadLoggerService
                 Thread.State state = threadInfo.getThreadState(  );
                 LockInfo lock = threadInfo.getLockInfo(  );
 
-                sbLog.append( "[Thread] [" ).append( state.name(  ) ).append( "] [" )
+                sbLog.append( "[Thread] [" ).append( threadInfo.getThreadId()).append("] [").append( state.name(  ) ).append( "] [" )
                      .append( threadInfo.getThreadName(  ) ).append( "]" );
 
                 if ( lock != null )
                 {
-                    sbLog.append( " locked on " ).append( lock.getClassName(  ) );
+                    sbLog.append( " locked on " ).append( lock.getClassName(  )).append( "by Thread ID:").append( threadInfo.getLockOwnerId());
                 }
 
                 sbLog.append( " - bc=" ).append( threadInfo.getBlockedCount(  ) );
