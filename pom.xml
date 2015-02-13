@@ -10,7 +10,7 @@
     <groupId>fr.paris.lutece.plugins</groupId>
     <artifactId>plugin-threadlogger</artifactId>
     <packaging>lutece-plugin</packaging>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <name>Lutece threadlogger plugin</name>
 
     <repositories>
@@ -41,7 +41,7 @@
         <connection>scm:git:https://github.com/lutece-platform/lutece-system-plugin-threadlogger.git</connection>
         <developerConnection>scm:git:https://github.com/lutece-platform/lutece-system-plugin-threadlogger.git</developerConnection>
         <url>https://github.com/lutece-platform/lutece-system-plugin-threadlogger.git</url>
-      <tag>lutece-system-plugin-threadlogger-1.0.0</tag>
+      <tag>HEAD</tag>
   </scm>
 
 </project>
