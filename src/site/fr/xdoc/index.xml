@@ -11,13 +11,29 @@
             </p>
             -->
             <subsection name="Introduction">
-                <p></p>
+                <p>ce plugin permet de logger tous les threads avec éventuellement leur pile lorsque leur nombre dépasse une limite donnée.</p>
             </subsection>
             <subsection name="Configuration">
-                <p></p>
+                <p>La configuration se déclare dans le fichier threadlogger.properties se trouvant dans le répertoire WEB-INF/conf/plugins/ </p>
+                <p>La définition de la limite ainsi que les options pour afficher les piles se déclarent comme suit :</p> 
+                <div class="source">
+                        <pre>
+# threadlogger properties file
+
+# Logs if thread count > 40
+threadlogger.threads.limit=40
+
+# delay 20s
+threadlogger.watch.delay=20000
+
+# Show current stack for states RUNNABLE, TIMED_WAITING, BLOCKED, WAITING, NEW, TERMINATED
+threadlogger.showStackTrace.states=RUNNABLE, BLOCKED                        
+                        </pre>
+                    </div>
+
             </subsection>
             <subsection name="Usage">
-                <p></p>
+                <p>Lorsque le plugin est activé, les logs apparaissent dans le fichier application.log dès que la limite du nombre de threads est dépassée.</p>
             </subsection>
         </section>
     </body>

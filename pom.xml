@@ -36,4 +36,11 @@
         <jiraProjectName>THREADLOGGER</jiraProjectName>
         <jiraComponentId></jiraComponentId>
     </properties>
+    
+    <scm>
+        <connection>scm:git:https://github.com/lutece-platform/lutece-system-plugin-threadlogger.git</connection>
+        <developerConnection>scm:git:https://github.com/lutece-platform/lutece-system-plugin-threadlogger.git</developerConnection>
+        <url>https://github.com/lutece-platform/lutece-system-plugin-threadlogger.git</url>
+    </scm>
+
 </project>
