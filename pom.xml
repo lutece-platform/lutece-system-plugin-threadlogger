@@ -33,7 +33,7 @@
 
     <properties>
         <componentName>threadlogger</componentName>
-        <jiraProjectName>THREADLOGGER</jiraProjectName>
+        <jiraProjectName>THREADLOG</jiraProjectName>
         <jiraComponentId />
     </properties>
     
